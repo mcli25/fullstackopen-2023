@@ -89,22 +89,27 @@ const App = () => {
           });
       }
     } else {
-      // setPersons([...persons, { name: newName, number: newNumber }]);
       const personObject = { name: newName, number: newNumber };
 
       //add person to the server
-      personService.create(personObject).then((response) => {
-        setPersons([...persons, response.data]);
-      });
+      personService
+        .create(personObject)
+        .then((response) => {
+          setPersons([...persons, response.data]);
 
-      setErrorMessage(`Added ${newName}`);
+          setNewName("");
+          setNewNumber("");
+          setErrorMessage(`Added ${newName}`);
+        })
+        .catch((error) => {
+          // this is the way to access the error message
+          setErrorMessage(error.message);
+        });
+
       setTimeout(() => {
         setErrorMessage(null);
       }, 5000);
     }
-
-    setNewName("");
-    setNewNumber("");
   };
 
   const deletePerson = (id) => {
@@ -118,7 +123,9 @@ const App = () => {
           .then((response) => {
             console.log(response);
             setPersons(persons.filter((person) => person.id !== id));
-            console.log(`Person with id ${id} has been deleted successfully.`);
+            setErrorMessage(
+              `Person with id ${id} has been deleted successfully.`
+            );
           })
           .catch((error) => {
             window.alert(`Failed to delete the person with id ${id}`);
@@ -141,13 +148,11 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
-
-      <Notification message={errorMessage} />
+      {errorMessage !== "" && <Notification message={errorMessage} />}
       <Filter
         filteredName={filteredName}
         handleFilteredNameChange={handleFilteredNameChange}
       />
-
       <h2>Add a new</h2>
       <PersonForm
         addPerson={addPerson}
@@ -156,9 +161,7 @@ const App = () => {
         newName={newName}
         newNumber={newNumber}
       />
-
       <h2>Numbers</h2>
-
       <Persons
         personsToShow={personsToShow}
         toggleImportanceOf={toggleImportanceOf}
