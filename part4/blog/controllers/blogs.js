@@ -16,6 +16,8 @@ blogsRouter.get("/", async (request, response, next) => {
 });
 
 blogsRouter.post("/", async (request, response, next) => {
+  console.log("Received request body:", request.body);
+  console.log("User from token:", request.user);
   const { title, author, url, likes } = request.body;
   // const decodedToken = jwt.verify(request.token, process.env.SECRET);
   // if (!decodedToken.id) {
@@ -38,6 +40,7 @@ blogsRouter.post("/", async (request, response, next) => {
     user.blogs = user.blogs.concat(savedBlog._id);
     await user.save();
 
+    console.log("Blog saved:", savedBlog);
     response.status(201).json(savedBlog);
   } catch (error) {
     next(error);
@@ -80,7 +83,7 @@ blogsRouter.put("/:id", async (request, response, next) => {
       request.params.id,
       request.body,
       { new: true, runValidators: true, context: "query" }
-    );
+    ).populate("user", { username: 1, name: 1 });
     if (updatedBlog) {
       response.json(updatedBlog);
     } else {
